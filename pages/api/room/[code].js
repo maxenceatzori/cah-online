@@ -3,10 +3,14 @@ import Redis from 'ioredis';
 let _redis;
 function getRedis() {
   if (!_redis) {
-    _redis = new Redis(process.env.REDIS_URL, {
-      tls: {},
+    const url = process.env.REDIS_URL;
+    _redis = new Redis(url, {
+      // Only use TLS for rediss:// URLs
+      tls: url?.startsWith('rediss://') ? {} : undefined,
       maxRetriesPerRequest: 3,
+      connectTimeout: 10000,
     });
+    _redis.on('error', (err) => console.error('Redis error:', err));
   }
   return _redis;
 }
@@ -56,6 +60,6 @@ export default async function handler(req, res) {
     return res.status(405).end();
   } catch (err) {
     console.error('Redis error:', err);
-    return res.status(500).json({ error: 'Storage error: ' + err.message });
+    return res.status(500).json({ error: err.message });
   }
 }
