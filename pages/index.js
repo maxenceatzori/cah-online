@@ -1,0 +1,811 @@
+import Head from 'next/head';
+import { useState, useEffect, useRef } from 'react';
+
+// ─── CARDS ────────────────────────────────────────────────────────────────────
+
+const BLACK_CARDS = [
+  { text: "Hey Reddit! I'm ___. Ask me anything.", pick: 1 },
+  { text: "Introducing X-treme Baseball! It's like baseball, but with ___!", pick: 1 },
+  { text: "What is Batman's guilty pleasure?", pick: 1 },
+  { text: "TSA guidelines now prohibit ___ on airplanes.", pick: 1 },
+  { text: "Next from J.K. Rowling: Harry Potter and the Chamber of ___.", pick: 1 },
+  { text: "That's right, I killed ___. How, you ask? ___.", pick: 2 },
+  { text: "I'm sorry, Professor, but I couldn't complete my homework because of ___.", pick: 1 },
+  { text: "And the Academy Award for ___ goes to ___.", pick: 2 },
+  { text: "Dude, do not go in that bathroom. There's ___ in there.", pick: 1 },
+  { text: "How did I lose my virginity?", pick: 1 },
+  { text: "It's a pity that kids these days are all getting involved with ___.", pick: 1 },
+  { text: "Step 1: ___. Step 2: ___. Step 3: Profit.", pick: 2 },
+  { text: "___ Betcha can't have just one!", pick: 1 },
+  { text: "Kids, I don't need drugs to get high. I'm high on ___.", pick: 1 },
+  { text: "For my next trick, I will pull ___ out of ___.", pick: 2 },
+  { text: "Mitch McConnell can't cum without ___.", pick: 1 },
+  { text: "In the new Disney Channel Original Movie, Hannah Montana struggles with ___ for the first time.", pick: 1 },
+  { text: "What's my secret power?", pick: 1 },
+  { text: "I'm going on a cleanse this week. Nothing but kale juice and ___.", pick: 1 },
+  { text: "___ + ___ = ___.", pick: 3 },
+  { text: "When Pharaoh remained unmoved, Moses called down a Plague of ___.", pick: 1 },
+  { text: "Just once, I'd like to hear you say 'Thanks, Mom. Thanks for ___'", pick: 1 },
+  { text: "Daddy, why is mommy crying?", pick: 1 },
+  { text: "When I was tripping on acid, ___ turned into ___.", pick: 2 },
+  { text: "50% of all marriages end in ___.", pick: 1 },
+  { text: "My fellow Americans: Before this decade is out, we will have ___ on the moon!", pick: 1 },
+  { text: "This season at Steppenwolf, Samuel Beckett's classic existential play: Waiting for ___.", pick: 1 },
+  { text: "Instead of coal, Santa now gives the bad children ___.", pick: 1 },
+  { text: "Life for American Indians was forever changed when the White Man introduced them to ___.", pick: 1 },
+  { text: "What's Teach For America using to inspire inner city students to succeed?", pick: 1 },
+  { text: "Maybe she's born with it. Maybe it's ___.", pick: 1 },
+  { text: "My name is Peter Parker. I was bitten by a radioactive spider, and now I'm ___.", pick: 1 },
+  { text: "White people like ___.", pick: 1 },
+  { text: "___ is a slippery slope that leads to ___.", pick: 2 },
+  { text: "Why do I hurt all over?", pick: 1 },
+  { text: "A romantic, candlelit dinner would be incomplete without ___.", pick: 1 },
+  { text: "Just saw this upsetting video! Please retweet!! #stop___", pick: 1 },
+  { text: "Fun tip! When your man asks you to go down on him, try surprising him with ___ instead.", pick: 1 },
+  { text: "The class field trip was completely ruined by ___.", pick: 1 },
+  { text: "What's a girl's best friend?", pick: 1 },
+  { text: "Dear Abby, I'm having some trouble with ___ and would like your advice.", pick: 1 },
+  { text: "In Jordan Peele's new thriller, a young family discovers that ___ had really been ___ all along.", pick: 2 },
+  { text: "When I am President, I will create the Department of ___.", pick: 1 },
+  { text: "What are my parents hiding from me?", pick: 1 },
+  { text: "What never fails to liven up the party?", pick: 1 },
+  { text: "IF you like ___, YOU MIGHT BE A REDNECK.", pick: 1 },
+  { text: "Make a haiku.", pick: 3 },
+  { text: "What made my first kiss so awkward?", pick: 1 },
+  { text: "Hey guys, welcome to Chili's! Would you like to start the night off right with ___?", pick: 1 },
+  { text: "I got 99 problems but ___ ain't one.", pick: 1 },
+  { text: "___ It's a trap!", pick: 1 },
+  { text: "Hulu's new reality show features twelve hot singles living with ___.", pick: 1 },
+  { text: "What would grandma find disturbing, yet oddly charming?", pick: 1 },
+  { text: "___ That was so metal.", pick: 1 },
+  { text: "I never truly understood ___ until I encountered ___.", pick: 2 },
+  { text: "During sex, I like to think about ___.", pick: 1 },
+  { text: "What ended my last relationship?", pick: 1 },
+  { text: "What's that sound?", pick: 1 },
+  { text: "Uh, hey guys, I know this was my idea, but I'm having serious doubts about ___.", pick: 1 },
+  { text: "Why am I sticky?", pick: 1 },
+  { text: "I'm no doctor, but I'm pretty sure what you're suffering from is called '___'", pick: 1 },
+  { text: "What's there a ton of in heaven?", pick: 1 },
+  { text: "After four platinum albums and three Grammys, it's time to get back to my roots, to what inspired me to make music in the first place: ___.", pick: 1 },
+  { text: "What will always get you laid?", pick: 1 },
+  { text: "They said we were crazy. They said we couldn't put ___ inside of ___. They were wrong.", pick: 2 },
+  { text: "Lifetime® presents '___: the Story of ___'", pick: 2 },
+  { text: "___: kid-tested, mother-approved.", pick: 1 },
+  { text: "Why can't I sleep at night?", pick: 1 },
+  { text: "What's that smell?", pick: 1 },
+  { text: "Why is Brett so sweaty?", pick: 1 },
+  { text: "This is the way the world ends / Not with a bang but with ___.", pick: 1 },
+  { text: "Coming to Broadway this season, ___: The Musical.", pick: 1 },
+  { text: "Here is the church / Here is the steeple / Open the doors / And there is ___.", pick: 1 },
+  { text: "But before I kill you, Mr. Bond, I must show you ___.", pick: 1 },
+  { text: "A recent laboratory study shows that undergraduates have 50% less sex after being exposed to ___.", pick: 1 },
+  { text: "Introducing the amazing superhero/sidekick duo! It's ___ and ___!", pick: 2 },
+  { text: "Next on ESPN2: The World Series of ___.", pick: 1 },
+  { text: "When I am a billionaire, I shall erect a 50-foot statue to commemorate ___.", pick: 1 },
+  { text: "Military historians remember Alexander the Great for his brilliant use of ___ against the Persians.", pick: 1 },
+  { text: "War! What is it good for?", pick: 1 },
+  { text: "What gives me uncontrollable gas?", pick: 1 },
+  { text: "The new Chevy Tahoe. With the power and space to take ___ everywhere you go.", pick: 1 },
+  { text: "Well if you'll excuse me, gentlemen, I have a date with ___.", pick: 1 },
+  { text: "Alternative medicine is now embracing the curative powers of ___.", pick: 1 },
+  { text: "As the mom of five rambunctious boys, I'm no stranger to ___.", pick: 1 },
+  { text: "___ High five, bro.", pick: 1 },
+  { text: "Today on Maury: 'Help! My son is ___!'", pick: 1 },
+  { text: "I get by with a little help from ___.", pick: 1 },
+  { text: "★☆☆☆☆ Do NOT go here! Found ___ in my fettuccine alfredo!", pick: 1 },
+  { text: "I drink to forget ___.", pick: 1 },
+  { text: "I'm LeBron James, and when I'm not slamming dunks, I love ___.", pick: 1 },
+  { text: "What makes life worth living?", pick: 1 },
+  { text: "Arby's: We Have ___.", pick: 1 },
+  { text: "Are you aware that your daughter is ___?", pick: 1 },
+  { text: "If you can't be with the one you love, love ___.", pick: 1 },
+  { text: "Brought to you by Bud Light®, the Official Beer of ___.", pick: 1 },
+  { text: "Click Here for ___!!!", pick: 1 },
+  { text: "Check me out, yo! I call this dance move '___'", pick: 1 },
+  { text: "Old MacDonald had ___. E-I-E-I-O.", pick: 1 },
+  { text: "Men's Wearhouse: You're gonna like ___. I guarantee it.", pick: 1 },
+];
+
+const WHITE_CARDS = [
+  "Silence.", "The illusion of choice in a late-stage capitalist society.", "Many bats.", "Hot Asian men.",
+  "Shame.", "Website.", "Assaulting a police officer.", "Magnets.", "A sorry excuse for a father.",
+  "Seeing what happens when you lock people in a room with hungry seagulls.", "A crucifixion.", "A narc.",
+  "Boneless buffalo wings.", "A live studio audience.", "Complaining.", "Authentic Mexican cuisine.",
+  "Doing crimes.", "COVID-19.", "Crippling debt.", "Daddy issues.", "Working in an Amazon warehouse.",
+  "A fart so powerful that it wakes the giants from their thousand-year slumber.", "Former President George W. Bush.",
+  "Full frontal nudity.", "Covering myself with Parmesan cheese and chili flakes because I am pizza.",
+  "Laying an egg.", "Getting naked and watching Nickelodeon.", "Pretending to care.",
+  "Having big dreams but no realistic way to achieve them.", "Seeing Grandma naked.", "Boogers.",
+  "The Confederate flag.", "The miracle of childbirth.", "A positive attitude!", "Having a stroke.",
+  "White privilege.", "Emerging from the sea and rampaging through Tokyo.", "The Hamburglar.",
+  "The tampon from my vagina.", "The Blood of Christ.", "Soft, kissy missionary sex.", "BATMAN!",
+  "Agriculture.", "Barely making $25,000 a year.", "Natural selection.", "Boomers.",
+  "Dropping a hot doodie out of my turd hole.", "My abusive boyfriend who really isn't so bad once you get to know him.",
+  "Prescription pain killers.", "Swooping.", "Mansplaining.", "A homoerotic volleyball montage.",
+  "Alexandria Ocasio-Cortez.", "Putting things where they go.", "Holding a pepper grinder for some reason.",
+  "Giving birth in prison.", "An old guy who's almost dead.", "Kanye West.", "Hot cheese.",
+  "Getting serial killed.", "Seven dead and three in critical condition.", "Smegma.", "Alcoholism.",
+  "A middle-aged man on roller skates.", "Nobody giving a shit about anything anymore.",
+  "Self-loathing.", "Half-assed foreplay.", "The Holy Bible.", "German dungeon porn.",
+  "Being on fire.", "Using comedy as a coping mechanism.", "Gandhi.", "Your weird brother.",
+  "Birth control.", "Nasty shit, like real sick stuff.", "An erection that lasts longer than four hours.",
+  "A three-way with my wife and Shaquille O'Neal.", "The past.", "My genitals.",
+  "An endless stream of diarrhea.", "Science.", "Not reciprocating oral sex.", "Flightless birds.",
+  "A good sniff.", "50,000 volts straight to the nipples.", "Dead birds everywhere.", "The arrival of the pizza.",
+  "Permanent Orgasm-Face Disorder.", "The cool, refreshing taste of Pepsi.®", "Irritable bowel syndrome.",
+  "Oprah.", "Wondering if it's possible to get some of that salsa to go.", "Bananas.", "Cringe.",
+  "Me jubbly bubblies.", "Switching to Geico.®", "Peeing a little bit.", "Wet dreams.", "The Jews.",
+  "My cheating son-of-a-bitch husband.", "Powerful thighs.", "These hoes.", "The only gay person in a hundred miles.",
+  "Having sex for the first time.", "Donald J. Trump.",
+  "Kissing grandma on the forehead and turning off her life support.", "A certain je ne sais quoi.",
+  "An AR-15 assault rifle.", "My good bra.", "Punching a congressman in the face.",
+  "Saying everything is okay when everything is clearly not okay.", "Being rich.",
+  "Floating down the Hudson River with the other garbage.", "Republicans.", "Sniffing and kissing my feet.",
+  "A much younger woman.", "Poverty.", "Kamala Harris.", "Committing suicide.", "A loser like you.",
+  "A mistake.", "Squirting.", "Wizard music.", "The Kool-Aid Man.",
+  "Explaining the difference between sex and gender.", "Free samples.", "Hurting those closest to me.",
+  "Feeding strawberries to my manslut.", "The Three-Fifths Compromise.", "Lactation.",
+  "Laughing over champagne flutes while the poor freeze to death outside.", "Shutting up so I can watch the game.",
+  "Doing white people shit with a bunch of white people.", "One titty hanging out.", "Fucking all my dad's friends.",
+  "Drinking gasoline to see what it tastes like.", "Inappropriate yodeling.", "Puberty.", "Ghosts.",
+  "50 mg of Zoloft daily.", "Fucking my sister.", "Braiding three penises into a Twizzler.", "Vigorous jazz hands.",
+  "Getting fingered.", "My Uber driver, Pavel.", "GoGurt.®", "Police brutality.", "An abortion.", "Preteens.",
+  "My fat daughter.", "Clean drinking water.", "Fading away into nothingness.", "Darth Vader.", "A sad handjob.",
+  "Exactly what you'd expect.", "Critical race theory.", "Adderall.®", "Your mom.", "Sideboob.",
+  "An octopus giving seven handjobs and smoking a cigarette.", "My neck, my back, my pussy, and my crack.",
+  "J.D. Power and his associates.", "Mouth herpes.", "Sperm whales.", "Women of color.",
+  "Men discussing their feelings in an emotionally healthy way.", "Incest.",
+  "Pac-Man uncontrollably guzzling cum.", "Casually suggesting a threesome.", "Running out of semen.", "God.",
+  "Backing over a kid with the Buick.", "Pissing in my thirsty mouth.", "Emotions.",
+  "Licking things to claim them as your own.", "Jobs.", "The placenta.",
+  "Lips that could suck the chrome off a doorknob.", "The Bachelorette season finale.",
+  "Throwing grapes at a man until he loses touch with reality.", "Establishing dominance.", "Finger painting.",
+  "Old-people smell.", "Getting crushed by a vending machine.", "My inner demons.",
+  "A Super Soaker™ full of cat pee.", "Aunt Jemima's® racist pancake sauce.", "Cuddling.",
+  "However much weed $20 can buy.", "Battlefield amputations.", "Spaghetti? Again?", "Ronald Reagan.",
+  "A disappointing birthday party.", "Nachos for the table.", "Becoming a blueberry.", "A tiny horse.", "Crab.",
+  "Selling crack to children.", "The Wendy's Spicy Chicken Sandwich.", "Brown people.",
+  "Sexually active band geeks.", "Pedophiles.", "Yeast.", "How bad my daughter fucked up her dance recital.",
+  "Rectangles.", "Being fucking pathetic.", "Poor people.", "Only dating Asian women.",
+  "Putting children in cages.", "Karen.", "How amazing it is to be on mushrooms.", "Judging everyone.",
+  "An all-white jury.", "Getting married, having a few kids, buying some stuff, retiring to Florida, and dying.",
+  "Some god damn peace and quiet.", "AIDS.", "Pictures of boobs.", "Strong female characters.",
+  "Getting decapitated by a helicopter.", "Hospice care.", "Getting really high.", "The opioid epidemic.",
+  "Penis envy.", "Gay conversion therapy.", "Burgers and pussy.", "Smelling of cum.", "The KKK.",
+  "A pangender octopus who roams the cosmos in search of love.", "Meth.", "Cyanide.",
+  "Holding down a child and farting all over him.", "A Bop It.™", "A whole thing of butter.",
+  "Still being a virgin.", "Solving problems with violence.", "Getting cummed on.", "Pixelated bukkake.",
+  "A lifetime of sadness.", "A non-disclosure agreement.", "Dick pics.", "Racism.", "Menstrual rage.",
+  "Sunshine and rainbows.", "Joe Biden.", "Three ounces of clean urine.", "Doing drugs with my kids.",
+  "My gay best friend.", "A gossamer stream of jizz that catches the light as it arcs through the morning air.",
+  "Executing a hostage every hour.", "The rhythms of Africa.", "Breaking out into song and dance.", "Leprosy.",
+  "Gloryholes.", "Nipple blades.", "The heart of a child.", "Puppies!", "Fellowship in Christ.",
+  "My wife having sex with your wife.", "Waking up half-naked in a Denny's parking lot.",
+  "An older woman who knows her way around the penis.", "Getting drugs off the street and into my body.",
+  "Daniel Radcliffe's delicious asshole.", "Active listening.", "Ethnic cleansing.", "Itchy pussy.",
+  "Blowing my boyfriend so hard he shits.", "A fuck-ton of almonds.", "A cis man playing a trans woman.",
+  "Waiting till marriage.", "NFTs.", "Pretending to be a dentist.", "The Devil himself.", "Salvation.",
+  "Erectile dysfunction.", "My collection of Japanese sex toys.", "The Pope.", "White people.", "Tentacle porn.",
+  "My bright pink fuckhole.", "How far I can get my own penis up my butt.", "Having anuses for eyes.",
+  "Two Xanax and a bottle of wine.", "My pet scorpion, Tina.", "Danny DeVito.", "The magic of live theatre.",
+  "Throwing a virgin into a volcano.", "Dwayne 'The Rock' Johnson.", "Accepting the way things are.",
+  "NBA superstar LeBron James.", "Listening to her problems without trying to solve them.", "Therapy.",
+  "Being fat and stupid.", "Pooping back and forth. Forever.",
+  "Tearing that ass up like wrapping paper on Christmas morning.", "More elephant cock than I bargained for.",
+  "A salty surprise.", "The South.", "The violation of our most basic human rights.", "Saudi oil money.",
+  "Consensual sex.", "Telling a shitty story that goes nowhere.", "A good, strong gorilla.", "Seeing my father cry.",
+  "Necrophilia.", "Being a woman.", "Getting into a pretty bad car accident.", "Bill Nye the Science Guy.",
+  "Black people.", "Prostate stimulation.", "Lunchables.™", "Bitches.",
+  "Some punk kid who stole my turkey sandwich.", "Heartwarming orphans.", "Spirit Airlines.",
+  "Bubble butt bottom boys.", "A bowl of mayonnaise and human teeth.", "Fiery poops.", "Saying 'I love you.'",
+  "Inserting a Mason jar into my anus.", "The true meaning of Christmas.", "Whatever's in the fridge.",
+  "Owning and operating a Chili's franchise.", "Estrogen.", "Girls.", "The Russians.", "A bleached asshole.",
+  "Fucking the weatherman on live television.", "PTSD.", "Dark and mysterious forces beyond our control.",
+  "Smallpox blankets.", "Masturbating.", "Hobos.", "Queefing.", "My fuckslave, Reginald.", "Cardi B.",
+  "Viagra.®", "Soup that is too hot.", "The ugliest boy in town.", "Explaining how vaginas work.",
+  "Academy Award winner Meryl Streep.", "Drinking alone.", "Dick fingers.", "Multiple stab wounds.",
+  "The death penalty.", "A supportive touch on the lower back.", "Anal beads.", "Slaughtering innocent civilians.",
+  "Pulling out.", "Being able to talk to elephants.", "Horse meat.", "A really cool hat.", "Stalin.",
+  "A stray pube.", "Worshipping that pussy.", "Completely unwarranted confidence.", "Doin' it in the butt.",
+  "My ex-wife.", "Tiny tits that say 'Yippee!' when you touch them.", "Touching a pug right on his penis.",
+  "A windmill full of corpses.", "The whole enchilada.", "Vladimir Putin.", "The Patriarchy.",
+  "The glass ceiling.", "Vomiting seafood and bleeding anally.", "The American Dream.", "Not wearing pants.",
+  "My balls on your face.", "Pooping in a laptop and closing it.", "Some bitch who loves pineapple.", "Foreskin.",
+  "Getting crushed between Serena Williams' thighs.", "Italians.", "A fetus.",
+  "Firing a rifle into the air while balls deep in a squealing hog.", "Natural gas.",
+  "Over 10,000 Guatemalan migrants.", "Toxic masculinity.", "My relationship status.", "An unwanted pregnancy.",
+  "Marvel.", "My boss.", "Bees?", "Harry Potter erotica.", "Giving birth to the Antichrist.",
+  "Three dicks at the same time.", "Nazis.", "8 oz. of Mexican black-tar heroin.", "What that mouth do.",
+  "Dead parents.", "Object permanence.", "Opposable thumbs.", "Racially-biased SAT questions.",
+  "The Great Depression.", "Chainsaws for hands.", "Nicolas Cage.", "Like, whatever.", "Explosions.",
+  "Not vaccinating my children because I am stupid.", "Our dildo.", "Huffing spray paint.",
+  "A man on the brink of orgasm.", "Using a condom.", "Invading Poland.", "My vagina.", "Assless chaps.",
+  "Murder.", "Sipping kombucha like a smug piece of shit.", "Her Majesty, Queen Elizabeth II.", "Black Jesus.",
+  "Memes.", "Sex with animals.", "Being marginalized.", "Goblins.", "Hope.", "Liberals.", "A micropenis.",
+  "Committing treason.", "A ball of earwax, semen, and toenail clippings.", "A horde of Vikings.", "Hot people.",
+  "Seething with quiet resentment.", "An Oedipus complex.", "Geese.", "Extremely tight pants.", "Fox News.",
+  "A little boy who won't shut the fuck up about dinosaurs.", "Bryan Cranston, of all people.",
+  "Vehicular manslaughter.", "Women's suffrage.", "Some guy.", "Judge Judy.",
+  "Climbing a telephone pole and becoming one with the T-Mobile network.", "This month's mass shooting.",
+  "Barack Obama.", "Illegal immigrants.", "My horny, horny son.", "The female orgasm.", "Heteronormativity.",
+  "Crumbs all over the god damn carpet.", "Corporate America.", "The wifi password.",
+  "A time-traveling Chinese general from the Shang Dynasty.", "A bird that shits human turds.",
+  "A mopey zoo lion.", "Pro-life protesters.", "Poor life choices.", "My sex life.", "Auschwitz.",
+  "Cocaine for lunch.", "All the dudes I've fucked.", "The clitoris.", "The Big Bang.", "Land mines.",
+  "The entire Mormon Tabernacle Choir.", "A micropig wearing a tiny raincoat and booties.", "Penis breath.",
+  "A gambling problem.", "Man meat.", "Me time.", "The Underground Railroad.", "Kayaking with my sluts.",
+  "Boppin' my flopper.", "Lumberjack fantasies.", "Goat.", "Women in yogurt commercials.",
+  "Literally begging to die.", "Being a motherfucking sorcerer.", "My Black ass.", "Genuine human connection.",
+  "Announcing that I am about to cum.", "Balls.", "Grandma.", "Friction.",
+  "Applying topical ointment to my grandfather's infected penis.", "Farting and walking away.",
+  "Being a dick to children.", "One trillion dollars.", "Drowning the kids in the bathtub.", "Dying.",
+  "Drinking out of the toilet and eating garbage.", "The gays.", "The screams... the terrible screams.",
+  "Men.", "The bombing of Nagasaki.", "Fake tits.", "The Amish.",
+  "Calling the cops on an innocent Black man.", "My ugly face and bad personality.", "A bitch slap.",
+  "A brain tumor.", "Giggling like an anime girl.", "Swamp ass.", "The milkman.", "Cards Against Humanity.",
+];
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+
+const HAND_SIZE = 7;
+const POLL_MS   = 2500;
+const WIN_SCORE = 8;
+
+const shuffle = arr => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+
+const genId   = () => Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
+const genCode = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+};
+
+const loadRoom = async code => {
+  const res = await fetch(`/api/room/${code}`);
+  if (!res.ok) return null;
+  return res.json();
+};
+
+const saveRoom = async (code, state) => {
+  await fetch(`/api/room/${code}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(state),
+  });
+};
+
+// Parse black card text into segments for rendering
+const parseBlanks = (text, cards = []) => {
+  const parts = text.split('___');
+  const result = [];
+  parts.forEach((part, i) => {
+    if (part) result.push({ t: 'text', v: part });
+    if (i < parts.length - 1) {
+      const card = cards[i];
+      result.push(card ? { t: 'fill', v: card.replace(/\.$/, '') } : { t: 'blank' });
+    }
+  });
+  return result;
+};
+
+// ─── SUB-COMPONENTS ───────────────────────────────────────────────────────────
+
+function BlackCard({ text, pick, filled = [] }) {
+  const parts = parseBlanks(text, filled);
+  return (
+    <div className="black-card card-shadow fade-up">
+      <div className="card-label">CARDS AGAINST HUMANITY</div>
+      <p className="black-card-text">
+        {parts.map((p, i) =>
+          p.t === 'text' ? <span key={i}>{p.v}</span> :
+          p.t === 'fill' ? <span key={i} className="blank-filled">{p.v}</span> :
+                           <span key={i} className="blank-empty">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        )}
+      </p>
+      {pick > 1 && <div className="pick-badge">PICK {pick}</div>}
+
+      <style jsx>{`
+        .black-card { background:#111; border:2px solid #2a2a2a; border-radius:16px; padding:20px 20px 16px; width:100%; max-width:360px; margin:0 auto; }
+        .card-label { font-size:10px; color:#444; font-weight:700; letter-spacing:2px; margin-bottom:10px; }
+        .black-card-text { color:#fff; font-size:20px; font-weight:700; line-height:1.35; margin:0 0 16px; }
+        .blank-filled { border-bottom:2px solid rgba(255,255,255,0.5); padding-bottom:2px; font-style:italic; color:#eee; }
+        .blank-empty  { border-bottom:2px solid #444; display:inline-block; margin-bottom:-2px; }
+        .pick-badge   { display:inline-flex; align-items:center; background:#fff; border-radius:20px; padding:3px 12px; font-size:11px; font-weight:700; color:#000; }
+      `}</style>
+    </div>
+  );
+}
+
+function WhiteBtn({ text, selected, order, onClick }) {
+  return (
+    <button onClick={onClick} className={`white-btn btn-press ${selected ? 'sel' : ''}`}>
+      {selected && order !== undefined && <span className="order-badge">{order + 1}</span>}
+      {text}
+      <style jsx>{`
+        .white-btn { width:100%; text-align:left; padding:14px 16px; border-radius:12px; border:2px solid #222; background:#111; color:#bbb; font-weight:700; font-size:15px; cursor:pointer; position:relative; transition:border-color .15s, background .15s, color .15s; font-family:inherit; }
+        .white-btn.sel { background:#fff; color:#000; border-color:#fff; }
+        .order-badge { position:absolute; top:8px; right:10px; background:#000; color:#fff; border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+      `}</style>
+    </button>
+  );
+}
+
+function Scoreboard({ players, czarId, myId }) {
+  const sorted = [...players].sort((a, b) => b.score - a.score);
+  return (
+    <div className="scoreboard">
+      <div className="sb-label">SCORES · FIRST TO {WIN_SCORE}</div>
+      {sorted.map((p, i) => (
+        <div key={p.id} className="sb-row" style={{ borderBottom: i < sorted.length - 1 ? '1px solid #1a1a1a' : 'none' }}>
+          <div className="sb-left">
+            <div className="sb-avatar">{p.name[0].toUpperCase()}</div>
+            <span className="sb-name" style={{ color: p.id === myId ? '#fff' : '#888', fontWeight: p.id === myId ? 700 : 500 }}>
+              {p.name}{p.id === myId ? ' ·you' : ''}{p.id === czarId ? ' 👑' : ''}
+            </span>
+          </div>
+          <div className="sb-score bebas">{p.score}</div>
+        </div>
+      ))}
+      <style jsx>{`
+        .scoreboard { background:#111; border:1px solid #1e1e1e; border-radius:14px; padding:16px; }
+        .sb-label { font-size:10px; color:#444; font-weight:700; letter-spacing:2px; margin-bottom:12px; }
+        .sb-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; }
+        .sb-left { display:flex; align-items:center; gap:10px; }
+        .sb-avatar { width:28px; height:28px; border-radius:50%; background:#1e1e1e; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#666; flex-shrink:0; }
+        .sb-name { font-size:14px; }
+        .sb-score { font-size:24px; color:#fff; letter-spacing:1px; }
+      `}</style>
+    </div>
+  );
+}
+
+function Btn({ children, onClick, variant = 'primary', disabled, style: s }) {
+  return (
+    <button
+      onClick={!disabled ? onClick : undefined}
+      className={`app-btn btn-press v-${variant}`}
+      disabled={disabled}
+      style={s}
+    >
+      {children}
+      <style jsx>{`
+        .app-btn { width:100%; padding:16px 20px; border-radius:12px; font-weight:700; font-size:16px; cursor:pointer; border:none; transition:transform .1s; font-family:inherit; }
+        .app-btn:disabled { opacity:0.4; cursor:not-allowed; }
+        .v-primary   { background:#fff; color:#000; }
+        .v-secondary { background:#1a1a1a; color:#fff; border:1px solid #2a2a2a; }
+        .v-ghost     { background:transparent; color:#555; font-size:13px; }
+      `}</style>
+    </button>
+  );
+}
+
+function Inp({ placeholder, value, onChange, style: s, ...rest }) {
+  return (
+    <input
+      placeholder={placeholder} value={value} onChange={onChange}
+      style={{ width:'100%', padding:'14px 16px', borderRadius:12, border:'1px solid #2a2a2a', background:'#111', color:'#fff', fontSize:16, fontFamily:'Inter, sans-serif', outline:'none', boxSizing:'border-box', ...s }}
+      {...rest}
+    />
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+
+const page = { minHeight:'100vh', background:'#0a0a0a', color:'#fff', display:'flex', flexDirection:'column', alignItems:'center', padding:'24px 16px', maxWidth:480, margin:'0 auto' };
+
+export default function Home() {
+  const [myId]          = useState(genId);
+  const [screen, setScreen] = useState('home');
+  const [myName, setMyName] = useState('');
+  const [roomCode, setRoomCode] = useState('');
+  const [joinCode, setJoinCode] = useState('');
+  const [gs, setGs]     = useState(null);
+  const [selected, setSelected] = useState([]);
+  const [error, setError]   = useState('');
+  const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const pollRef = useRef(null);
+
+  // Polling
+  useEffect(() => {
+    if ((screen === 'lobby' || screen === 'game') && roomCode) {
+      const poll = async () => {
+        const state = await loadRoom(roomCode);
+        if (state) {
+          setGs(state);
+          if (state.phase === 'lobby' && screen === 'game') setScreen('lobby');
+          if (state.phase !== 'lobby' && screen === 'lobby') setScreen('game');
+        }
+      };
+      poll();
+      pollRef.current = setInterval(poll, POLL_MS);
+      return () => clearInterval(pollRef.current);
+    }
+  }, [screen, roomCode]);
+
+  // ── ACTIONS ──────────────────────────────────────────────────
+
+  const createRoom = async () => {
+    if (!myName.trim()) return setError('Enter your name');
+    setLoading(true); setError('');
+    const code = genCode();
+    const state = {
+      phase:'lobby', players:[{ id:myId, name:myName.trim(), score:0 }],
+      hostId:myId, czarIndex:0, currentBlackCard:null,
+      playerHands:{}, submissions:{}, submissionOrder:[], winner:null,
+      blackDeck:shuffle([...Array(BLACK_CARDS.length).keys()]),
+      whiteDeck:shuffle([...Array(WHITE_CARDS.length).keys()]),
+      blackPos:0, whitePos:0,
+    };
+    await saveRoom(code, state);
+    setRoomCode(code); setGs(state); setScreen('lobby');
+    setLoading(false);
+  };
+
+  const joinRoom = async () => {
+    if (!myName.trim()) return setError('Enter your name');
+    if (!joinCode.trim()) return setError('Enter a room code');
+    setLoading(true); setError('');
+    const code = joinCode.trim().toUpperCase();
+    const state = await loadRoom(code);
+    if (!state) { setLoading(false); return setError('Room not found'); }
+    if (state.phase !== 'lobby') { setLoading(false); return setError('Game already in progress'); }
+    if (state.players.find(p => p.name.toLowerCase() === myName.trim().toLowerCase())) {
+      setLoading(false); return setError('Name taken in this room');
+    }
+    state.players.push({ id:myId, name:myName.trim(), score:0 });
+    await saveRoom(code, state);
+    setRoomCode(code); setGs(state); setScreen('lobby');
+    setLoading(false);
+  };
+
+  const startGame = async () => {
+    setError('');
+    const state = await loadRoom(roomCode);
+    if (!state) return;
+    if (state.players.length < 2) return setError('Need at least 2 players');
+    setLoading(true);
+    let pos = state.whitePos;
+    const playerHands = {};
+    for (const p of state.players) {
+      playerHands[p.id] = [];
+      for (let i = 0; i < HAND_SIZE; i++) {
+        playerHands[p.id].push(WHITE_CARDS[state.whiteDeck[pos % state.whiteDeck.length]]);
+        pos++;
+      }
+    }
+    const czar = state.players[0];
+    const blackCard = BLACK_CARDS[state.blackDeck[0]];
+    const nonCzarIds = state.players.filter(p => p.id !== czar.id).map(p => p.id);
+    const newState = {
+      ...state, phase:'picking', playerHands, whitePos:pos, blackPos:1,
+      currentBlackCard:blackCard, czarIndex:0, submissionOrder:shuffle(nonCzarIds),
+      submissions:{}, winner:null,
+    };
+    await saveRoom(roomCode, newState);
+    setGs(newState); setScreen('game'); setLoading(false);
+  };
+
+  const submitCards = async () => {
+    const pick = gs?.currentBlackCard?.pick || 1;
+    if (selected.length !== pick || loading) return;
+    setLoading(true);
+    const state = await loadRoom(roomCode);
+    if (!state) { setLoading(false); return; }
+    const hand = state.playerHands[myId] || [];
+    const submittedTexts = selected.map(idx => hand[idx]);
+    state.submissions[myId] = submittedTexts;
+    const newHand = [...hand];
+    [...selected].sort((a,b) => b-a).forEach(idx => newHand.splice(idx,1));
+    state.playerHands[myId] = newHand;
+    const czar = state.players[state.czarIndex % state.players.length];
+    const nonCzars = state.players.filter(p => p.id !== czar.id);
+    if (nonCzars.every(p => state.submissions[p.id])) state.phase = 'judging';
+    await saveRoom(roomCode, state);
+    setGs(state); setSelected([]); setLoading(false);
+  };
+
+  const forceJudging = async () => {
+    const state = await loadRoom(roomCode);
+    if (!state || Object.keys(state.submissions).length === 0) return setError('No submissions yet');
+    state.phase = 'judging';
+    await saveRoom(roomCode, state); setGs(state);
+  };
+
+  const pickWinner = async (winnerId) => {
+    if (loading) return;
+    setLoading(true);
+    const state = await loadRoom(roomCode);
+    if (!state) { setLoading(false); return; }
+    const winner = state.players.find(p => p.id === winnerId);
+    if (!winner) { setLoading(false); return; }
+    state.players.find(p => p.id === winnerId).score++;
+    state.phase = 'winner';
+    state.winner = { id:winnerId, name:winner.name, cards:state.submissions[winnerId] };
+    await saveRoom(roomCode, state); setGs(state); setLoading(false);
+  };
+
+  const nextRound = async () => {
+    if (loading) return;
+    setLoading(true);
+    const state = await loadRoom(roomCode);
+    if (!state) { setLoading(false); return; }
+    if (state.players.some(p => p.score >= WIN_SCORE)) {
+      state.phase = 'gameover';
+      await saveRoom(roomCode, state); setGs(state); setLoading(false); return;
+    }
+    const newCzarIdx = (state.czarIndex + 1) % state.players.length;
+    const newCzar = state.players[newCzarIdx];
+    let pos = state.whitePos;
+    for (const p of state.players) {
+      const h = [...(state.playerHands[p.id] || [])];
+      while (h.length < HAND_SIZE) { h.push(WHITE_CARDS[state.whiteDeck[pos % state.whiteDeck.length]]); pos++; }
+      state.playerHands[p.id] = h;
+    }
+    const blackCard = BLACK_CARDS[state.blackDeck[state.blackPos % state.blackDeck.length]];
+    const nonCzarIds = state.players.filter(p => p.id !== newCzar.id).map(p => p.id);
+    const newState = {
+      ...state, phase:'picking', czarIndex:newCzarIdx, currentBlackCard:blackCard,
+      blackPos:state.blackPos+1, whitePos:pos, submissions:{},
+      submissionOrder:shuffle(nonCzarIds), winner:null,
+    };
+    await saveRoom(roomCode, newState); setGs(newState); setSelected([]); setLoading(false);
+  };
+
+  const resetGame = async () => {
+    const state = await loadRoom(roomCode);
+    if (!state) return;
+    const newState = {
+      ...state, phase:'lobby', players:state.players.map(p => ({ ...p, score:0 })),
+      blackDeck:shuffle([...Array(BLACK_CARDS.length).keys()]),
+      whiteDeck:shuffle([...Array(WHITE_CARDS.length).keys()]),
+      blackPos:0, whitePos:0, playerHands:{}, submissions:{}, winner:null, czarIndex:0,
+    };
+    await saveRoom(roomCode, newState); setGs(newState); setScreen('lobby');
+  };
+
+  const copyCode = () => {
+    navigator.clipboard?.writeText(roomCode).catch(() => {});
+    setCopied(true); setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Derived state
+  const czar        = gs ? gs.players[gs.czarIndex % gs.players.length] : null;
+  const isCzar      = czar?.id === myId;
+  const myHand      = gs?.playerHands?.[myId] || [];
+  const hasSubmitted = !!gs?.submissions?.[myId];
+  const nonCzarCount = gs ? gs.players.filter(p => p.id !== czar?.id).length : 0;
+  const submittedCount = gs ? Object.keys(gs.submissions).length : 0;
+  const pick        = gs?.currentBlackCard?.pick || 1;
+
+  const toggleCard = idx => {
+    setSelected(prev => {
+      if (prev.includes(idx)) return prev.filter(i => i !== idx);
+      if (prev.length >= pick) return [...prev.slice(-(pick-1)), idx];
+      return [...prev, idx];
+    });
+  };
+
+  // ── SCREENS ──────────────────────────────────────────────────
+
+  // HOME
+  if (screen === 'home') return (
+    <div style={page}>
+      <Head><title>Cards Against Humanity · Online</title></Head>
+      <div style={{ width:'100%', flex:1, display:'flex', flexDirection:'column', justifyContent:'center' }}>
+        <div style={{ textAlign:'center', marginBottom:40 }}>
+          <div className="card-shadow" style={{ display:'inline-block', background:'#fff', color:'#000', borderRadius:16, padding:'20px 28px', marginBottom:14 }}>
+            <div className="bebas" style={{ fontSize:34, letterSpacing:2, lineHeight:1.1 }}>Cards Against<br />Humanity</div>
+          </div>
+          <div style={{ color:'#444', fontSize:13 }}>Online · No account needed</div>
+        </div>
+
+        {error && <div style={{ background:'#1a0a0a', border:'1px solid #5a1a1a', borderRadius:10, padding:'12px 16px', marginBottom:16, color:'#ff6b6b', fontSize:14 }}>{error}</div>}
+
+        <Inp placeholder="Your name" value={myName} onChange={e => { setMyName(e.target.value); setError(''); }} maxLength={20} style={{ marginBottom:12, fontSize:18, fontWeight:700 }} />
+        <div style={{ marginBottom:20 }}><Btn onClick={createRoom} disabled={loading}>{loading ? 'Creating…' : '+ Create Room'}</Btn></div>
+
+        <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:20 }}>
+          <div style={{ flex:1, height:1, background:'#1e1e1e' }} />
+          <span style={{ color:'#333', fontSize:13 }}>or join with a code</span>
+          <div style={{ flex:1, height:1, background:'#1e1e1e' }} />
+        </div>
+
+        <Inp placeholder="ROOM CODE" value={joinCode} onChange={e => { setJoinCode(e.target.value.toUpperCase()); setError(''); }} maxLength={6} style={{ marginBottom:12, textAlign:'center', letterSpacing:6, fontSize:22, fontWeight:900 }} />
+        <Btn onClick={joinRoom} disabled={loading} variant="secondary">{loading ? 'Joining…' : 'Join Room →'}</Btn>
+      </div>
+    </div>
+  );
+
+  // LOBBY
+  if (screen === 'lobby') {
+    const isHost = gs?.hostId === myId;
+    return (
+      <div style={page}>
+        <Head><title>Lobby · {roomCode}</title></Head>
+        <div style={{ width:'100%' }}>
+          <div style={{ textAlign:'center', marginBottom:32 }}>
+            <div style={{ color:'#444', fontSize:11, letterSpacing:3, marginBottom:8 }}>ROOM CODE</div>
+            <div onClick={copyCode} className="btn-press bebas" style={{ cursor:'pointer', fontSize:60, letterSpacing:12, lineHeight:1, userSelect:'none' }}>{roomCode}</div>
+            <div style={{ color:copied ? '#4ade80' : '#333', fontSize:13, marginTop:8 }}>
+              {copied ? '✓ Copied!' : 'Tap to copy · Share with friends'}
+            </div>
+          </div>
+
+          <div style={{ background:'#111', border:'1px solid #1a1a1a', borderRadius:14, padding:16, marginBottom:24 }}>
+            <div style={{ fontSize:10, color:'#444', letterSpacing:2, marginBottom:12 }}>PLAYERS ({gs?.players?.length})</div>
+            {gs?.players?.map(p => (
+              <div key={p.id} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 0', borderBottom:'1px solid #1a1a1a' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                  <div style={{ width:32, height:32, borderRadius:'50%', background:'#1e1e1e', display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700, fontSize:13, color:'#666' }}>{p.name[0].toUpperCase()}</div>
+                  <span style={{ fontWeight:p.id===myId?700:500, color:p.id===myId?'#fff':'#888', fontSize:15 }}>
+                    {p.name}{p.id===myId && <span style={{ color:'#444', fontWeight:400, fontSize:12 }}> (you)</span>}
+                  </span>
+                </div>
+                {p.id === gs?.hostId && <span style={{ fontSize:11, color:'#f59e0b', fontWeight:700 }}>HOST</span>}
+              </div>
+            ))}
+          </div>
+
+          {error && <div style={{ color:'#ff6b6b', fontSize:13, marginBottom:12, textAlign:'center' }}>{error}</div>}
+
+          {isHost
+            ? <Btn onClick={startGame} disabled={loading}>{loading ? 'Starting…' : `Start Game → (${gs?.players?.length} player${gs?.players?.length!==1?'s':''})`}</Btn>
+            : <div className="pulse" style={{ textAlign:'center', color:'#333', fontSize:14 }}>Waiting for host to start…</div>
+          }
+        </div>
+      </div>
+    );
+  }
+
+  // GAME
+  if (screen === 'game' && gs) {
+    const { phase, currentBlackCard, submissions, submissionOrder, winner: wd } = gs;
+
+    // GAME OVER
+    if (phase === 'gameover') {
+      const sorted = [...gs.players].sort((a,b) => b.score - a.score);
+      return (
+        <div style={{ ...page, justifyContent:'center' }}>
+          <Head><title>Game Over!</title></Head>
+          <div style={{ width:'100%', textAlign:'center' }}>
+            <div style={{ fontSize:60, marginBottom:8 }}>🏆</div>
+            <div className="bebas" style={{ fontSize:50, letterSpacing:2 }}>{sorted[0].name} wins!</div>
+            <div style={{ color:'#555', marginBottom:28 }}>{sorted[0].score} glorious points</div>
+            <Scoreboard players={gs.players} czarId={czar?.id} myId={myId} />
+            {gs.hostId === myId
+              ? <div style={{ marginTop:20 }}><Btn onClick={resetGame}>Play Again</Btn></div>
+              : <div style={{ color:'#444', marginTop:20, fontSize:14 }}>Waiting for host to restart…</div>
+            }
+          </div>
+        </div>
+      );
+    }
+
+    // WINNER
+    if (phase === 'winner') return (
+      <div style={page}>
+        <Head><title>Round Winner!</title></Head>
+        <div style={{ width:'100%' }}>
+          <div style={{ textAlign:'center', marginBottom:18 }}>
+            <div style={{ fontSize:44, marginBottom:4 }}>🎉</div>
+            <div className="bebas" style={{ fontSize:38, letterSpacing:1 }}>{wd.name} wins this round!</div>
+          </div>
+          <BlackCard text={currentBlackCard.text} pick={currentBlackCard.pick} filled={wd.cards} />
+          <div style={{ margin:'14px 0 18px' }}>
+            {wd.cards.map((c,i) => <div key={i} className="card-shadow" style={{ background:'#fff', color:'#000', borderRadius:12, padding:'12px 16px', fontWeight:700, fontSize:16, marginBottom:8 }}>{c}</div>)}
+          </div>
+          <Scoreboard players={gs.players} czarId={czar?.id} myId={myId} />
+          <div style={{ marginTop:20 }}>
+            {isCzar
+              ? <Btn onClick={nextRound} disabled={loading}>{loading ? 'Loading…' : 'Next Round →'}</Btn>
+              : <div className="pulse" style={{ textAlign:'center', color:'#333', fontSize:14 }}>Waiting for {czar?.name} to start next round…</div>
+            }
+          </div>
+        </div>
+      </div>
+    );
+
+    // JUDGING
+    if (phase === 'judging') {
+      if (!isCzar) return (
+        <div style={{ ...page, justifyContent:'center' }}>
+          <div style={{ fontSize:52, marginBottom:12 }}>⚖️</div>
+          <div className="bebas" style={{ fontSize:34, textAlign:'center' }}>{czar?.name} is judging…</div>
+          <div style={{ color:'#444', marginTop:8 }}>Hang tight!</div>
+        </div>
+      );
+      const orderedSubs = (submissionOrder||[]).filter(pid => submissions[pid]).map((pid,i) => ({ pid, cards:submissions[pid], num:i+1 }));
+      return (
+        <div style={page}>
+          <div style={{ width:'100%' }}>
+            <div style={{ background:'#f59e0b', color:'#000', borderRadius:10, padding:'8px 16px', textAlign:'center', fontWeight:700, fontSize:13, marginBottom:16 }}>
+              👑 You are the Card Czar — pick your favourite!
+            </div>
+            <BlackCard text={currentBlackCard.text} pick={pick} />
+            <div style={{ marginTop:18, display:'flex', flexDirection:'column', gap:12, paddingBottom:24 }}>
+              {orderedSubs.map(sub => (
+                <button key={sub.pid} onClick={() => !loading && pickWinner(sub.pid)} className="btn-press card-shadow" style={{ background:'#fff', color:'#000', borderRadius:14, padding:'16px 18px', textAlign:'left', border:'none', cursor:'pointer' }}>
+                  <div style={{ fontSize:11, color:'#999', fontWeight:700, marginBottom:8 }}>SUBMISSION {sub.num}</div>
+                  {sub.cards.map((c,j) => <div key={j} style={{ fontWeight:700, fontSize:17, marginBottom:4 }}>{c}</div>)}
+                  <div style={{ marginTop:8, fontSize:13, color:'#666', lineHeight:1.4 }}>
+                    {parseBlanks(currentBlackCard.text, sub.cards).map((p,k) =>
+                      p.t==='text' ? <span key={k}>{p.v}</span> :
+                      p.t==='fill' ? <strong key={k}>{p.v}</strong> :
+                                     <em key={k} style={{ color:'#bbb' }}>___</em>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // PICKING
+    if (phase === 'picking') {
+      if (isCzar) return (
+        <div style={page}>
+          <div style={{ width:'100%' }}>
+            <div style={{ background:'#f59e0b', color:'#000', borderRadius:10, padding:'8px 16px', textAlign:'center', fontWeight:700, fontSize:13, marginBottom:16 }}>
+              👑 You are the Card Czar — wait for submissions
+            </div>
+            <BlackCard text={currentBlackCard.text} pick={pick} />
+            <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:14, padding:20, textAlign:'center', marginTop:18 }}>
+              <div className="bebas" style={{ fontSize:52, letterSpacing:2 }}>{submittedCount}/{nonCzarCount}</div>
+              <div style={{ color:'#555', fontSize:14 }}>players submitted</div>
+              {submittedCount > 0 && (
+                <button onClick={forceJudging} style={{ marginTop:14, background:'transparent', border:'none', color:'#444', fontSize:12, cursor:'pointer', textDecoration:'underline' }}>
+                  Force judge now (skip AFK players)
+                </button>
+              )}
+            </div>
+            <div style={{ marginTop:18 }}><Scoreboard players={gs.players} czarId={czar?.id} myId={myId} /></div>
+          </div>
+        </div>
+      );
+
+      if (hasSubmitted) return (
+        <div style={{ ...page, justifyContent:'center' }}>
+          <div style={{ fontSize:52, marginBottom:12 }}>✅</div>
+          <div className="bebas" style={{ fontSize:34 }}>Cards submitted!</div>
+          <div style={{ color:'#555', marginTop:6 }}>{submittedCount}/{nonCzarCount} players done</div>
+          <div className="pulse" style={{ color:'#333', marginTop:6, fontSize:13 }}>Waiting for others…</div>
+        </div>
+      );
+
+      return (
+        <div style={{ ...page, padding:'16px 16px 28px' }}>
+          <div style={{ width:'100%' }}>
+            <BlackCard text={currentBlackCard.text} pick={pick} filled={selected.map(idx => myHand[idx])} />
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', margin:'14px 0 12px' }}>
+              <div style={{ color:'#555', fontSize:13 }}>
+                Select {pick} card{pick>1?'s':''} &nbsp;·&nbsp;
+                <span style={{ color:selected.length===pick?'#4ade80':'#777' }}>{selected.length}/{pick}</span>
+              </div>
+              <button onClick={submitCards} disabled={selected.length!==pick||loading} className="btn-press"
+                style={{ background:selected.length===pick?'#fff':'#1a1a1a', color:selected.length===pick?'#000':'#444', border:'none', borderRadius:10, padding:'10px 18px', fontWeight:700, fontSize:14, cursor:selected.length===pick?'pointer':'not-allowed', fontFamily:'inherit' }}>
+                {loading ? '…' : 'Submit →'}
+              </button>
+            </div>
+            <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+              {myHand.map((card,i) => {
+                const selOrder = selected.indexOf(i);
+                return <WhiteBtn key={i} text={card} selected={selOrder!==-1} order={selOrder!==-1?selOrder:undefined} onClick={() => toggleCard(i)} />;
+              })}
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  return <div style={{ ...page, justifyContent:'center' }}><div className="pulse" style={{ color:'#333' }}>Loading…</div></div>;
+}
