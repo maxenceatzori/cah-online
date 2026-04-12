@@ -1,8 +1,30 @@
-import { Redis } from '@upstash/redis';
-const kv = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN,
-});
+import Redis from 'ioredis';
+
+let _redis;
+function getRedis() {
+  if (!_redis) {
+    _redis = new Redis(process.env.REDIS_URL, {
+      tls: {},
+      maxRetriesPerRequest: 3,
+    });
+  }
+  return _redis;
+}
+
+const kv = {
+  get: async (key) => {
+    const val = await getRedis().get(key);
+    return val ? JSON.parse(val) : null;
+  },
+  set: async (key, value, opts) => {
+    if (opts?.ex) {
+      await getRedis().set(key, JSON.stringify(value), 'EX', opts.ex);
+    } else {
+      await getRedis().set(key, JSON.stringify(value));
+    }
+  },
+  del: async (key) => getRedis().del(key),
+};
 
 export default async function handler(req, res) {
   const { code } = req.query;
@@ -21,7 +43,6 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') {
       const state = req.body;
-      // 24-hour TTL — rooms auto-expire
       await kv.set(key, state, { ex: 60 * 60 * 24 });
       return res.status(200).json({ ok: true });
     }
@@ -34,9 +55,7 @@ export default async function handler(req, res) {
     res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
     return res.status(405).end();
   } catch (err) {
-    console.error('KV error:', err);
-    return res.status(500).json({
-      error: 'Storage unavailable. Make sure Vercel KV is set up — see README.',
-    });
+    console.error('Redis error:', err);
+    return res.status(500).json({ error: 'Storage error: ' + err.message });
   }
 }
