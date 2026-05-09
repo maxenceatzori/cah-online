@@ -381,6 +381,8 @@ export default function Home() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [jokerText, setJokerText] = useState('');
+  const [showJokerInput, setShowJokerInput] = useState(false);
   const pollRef = useRef(null);
 
   useEffect(() => {
@@ -409,7 +411,7 @@ export default function Home() {
       playerHands:{}, submissions:{}, submissionOrder:[], winner:null,
       blackDeck:shuffle([...Array(BLACK_CARDS.length).keys()]),
       whiteDeck:shuffle([...Array(WHITE_CARDS.length).keys()]),
-      blackPos:0, whitePos:0,
+      blackPos:0, whitePos:0, jokerUsed:{}, jokerSubmissions:{},
     };
     await saveRoom(code, state);
     setRoomCode(code); setGs(state); setScreen('lobby');
@@ -482,6 +484,23 @@ export default function Home() {
     await saveRoom(roomCode, state); setGs(state);
   };
 
+  const submitJoker = async () => {
+    if (!jokerText.trim() || loading) return;
+    setLoading(true);
+    const state = await loadRoom(roomCode);
+    if (!state) { setLoading(false); return; }
+    const used = state.jokerUsed?.[myId] || 0;
+    if (used >= 3) { setLoading(false); return; }
+    state.submissions[myId] = [jokerText.trim()];
+    state.jokerUsed = { ...state.jokerUsed, [myId]: used + 1 };
+    state.jokerSubmissions = { ...state.jokerSubmissions, [myId]: true };
+    const czar = state.players[state.czarIndex % state.players.length];
+    const nonCzars = state.players.filter(p => p.id !== czar.id);
+    if (nonCzars.every(p => state.submissions[p.id])) state.phase = 'judging';
+    await saveRoom(roomCode, state);
+    setGs(state); setSelected([]); setJokerText(''); setShowJokerInput(false); setLoading(false);
+  };
+
   const pickWinner = async (winnerId) => {
     if (loading) return;
     setLoading(true);
@@ -489,9 +508,10 @@ export default function Home() {
     if (!state) { setLoading(false); return; }
     const winner = state.players.find(p => p.id === winnerId);
     if (!winner) { setLoading(false); return; }
-    state.players.find(p => p.id === winnerId).score++;
+    const isJoker = !!(state.jokerSubmissions?.[winnerId]);
+    state.players.find(p => p.id === winnerId).score += isJoker ? 2 : 1;
     state.phase = 'winner';
-    state.winner = { id:winnerId, name:winner.name, cards:state.submissions[winnerId] };
+    state.winner = { id:winnerId, name:winner.name, cards:state.submissions[winnerId], isJoker };
     await saveRoom(roomCode, state); setGs(state); setLoading(false);
   };
 
@@ -514,14 +534,14 @@ export default function Home() {
     }
     const blackCard = BLACK_CARDS[state.blackDeck[state.blackPos % state.blackDeck.length]];
     const nonCzarIds = state.players.filter(p => p.id !== newCzar.id).map(p => p.id);
-    const newState = { ...state, phase:'picking', czarIndex:newCzarIdx, currentBlackCard:blackCard, blackPos:state.blackPos+1, whitePos:pos, submissions:{}, submissionOrder:shuffle(nonCzarIds), winner:null };
+    const newState = { ...state, phase:'picking', czarIndex:newCzarIdx, currentBlackCard:blackCard, blackPos:state.blackPos+1, whitePos:pos, submissions:{}, submissionOrder:shuffle(nonCzarIds), winner:null, jokerSubmissions:{} };
     await saveRoom(roomCode, newState); setGs(newState); setSelected([]); setLoading(false);
   };
 
   const resetGame = async () => {
     const state = await loadRoom(roomCode);
     if (!state) return;
-    const newState = { ...state, phase:'lobby', players:state.players.map(p => ({ ...p, score:0 })), blackDeck:shuffle([...Array(BLACK_CARDS.length).keys()]), whiteDeck:shuffle([...Array(WHITE_CARDS.length).keys()]), blackPos:0, whitePos:0, playerHands:{}, submissions:{}, winner:null, czarIndex:0 };
+    const newState = { ...state, phase:'lobby', players:state.players.map(p => ({ ...p, score:0 })), blackDeck:shuffle([...Array(BLACK_CARDS.length).keys()]), whiteDeck:shuffle([...Array(WHITE_CARDS.length).keys()]), blackPos:0, whitePos:0, playerHands:{}, submissions:{}, winner:null, czarIndex:0, jokerUsed:{}, jokerSubmissions:{} };
     await saveRoom(roomCode, newState); setGs(newState); setScreen('lobby');
   };
 
@@ -537,6 +557,8 @@ export default function Home() {
   const nonCzarCount = gs ? gs.players.filter(p => p.id !== czar?.id).length : 0;
   const submittedCount = gs ? Object.keys(gs.submissions).length : 0;
   const pick = gs?.currentBlackCard?.pick || 1;
+  const myJokerUsed = gs?.jokerUsed?.[myId] || 0;
+  const jokersLeft = 3 - myJokerUsed;
 
   const toggleCard = idx => {
     setSelected(prev => {
@@ -632,12 +654,17 @@ export default function Home() {
         <Head><title>Round Winner!</title></Head>
         <div style={{ width:'100%' }}>
           <div style={{ textAlign:'center', marginBottom:18 }}>
-            <div style={{ fontSize:44, marginBottom:4 }}>🎉</div>
+            <div style={{ fontSize:44, marginBottom:4 }}>{wd.isJoker ? '✨' : '🎉'}</div>
             <div className="bebas" style={{ fontSize:38, letterSpacing:1 }}>{wd.name} wins the round!</div>
+            {wd.isJoker && (
+              <div style={{ display:'inline-block', background:'#a855f7', color:'#fff', borderRadius:20, padding:'4px 14px', fontSize:12, fontWeight:700, marginTop:6, letterSpacing:1 }}>
+                ✨ CUSTOM CARD · +2 POINTS
+              </div>
+            )}
           </div>
           <BlackCard text={currentBlackCard.text} pick={currentBlackCard.pick} filled={wd.cards} />
           <div style={{ margin:'14px 0 18px' }}>
-            {wd.cards.map((c,i) => <div key={i} className="card-shadow" style={{ background:'#fff', color:'#000', borderRadius:12, padding:'12px 16px', fontWeight:700, fontSize:16, marginBottom:8 }}>{c}</div>)}
+            {wd.cards.map((c,i) => <div key={i} className="card-shadow" style={{ background: wd.isJoker ? '#f3e8ff' : '#fff', color:'#000', borderRadius:12, padding:'12px 16px', fontWeight:700, fontSize:16, marginBottom:8, border: wd.isJoker ? '2px solid #a855f7' : 'none' }}>{c}</div>)}
           </div>
           <Scoreboard players={gs.players} czarId={czar?.id} myId={myId} />
           <div style={{ marginTop:20 }}>
@@ -658,7 +685,7 @@ export default function Home() {
           <div style={{ color:'#444', marginTop:8 }}>Sit tight!</div>
         </div>
       );
-      const orderedSubs = (submissionOrder||[]).filter(pid => submissions[pid]).map((pid,i) => ({ pid, cards:submissions[pid], num:i+1 }));
+      const orderedSubs = (submissionOrder||[]).filter(pid => submissions[pid]).map((pid,i) => ({ pid, cards:submissions[pid], num:i+1, isJoker: !!(gs.jokerSubmissions?.[pid]) }));
       return (
         <div style={page}>
           <div style={{ width:'100%' }}>
@@ -669,8 +696,11 @@ export default function Home() {
             <div style={{ marginTop:18, display:'flex', flexDirection:'column', gap:12, paddingBottom:24 }}>
               {orderedSubs.map(sub => (
                 <button key={sub.pid} onClick={() => !loading && pickWinner(sub.pid)} className="btn-press card-shadow"
-                  style={{ background:'#fff', color:'#000', borderRadius:14, padding:'16px 18px', textAlign:'left', border:'none', cursor:'pointer' }}>
-                  <div style={{ fontSize:11, color:'#999', fontWeight:700, marginBottom:8 }}>ANSWER {sub.num}</div>
+                  style={{ background:'#fff', color:'#000', borderRadius:14, padding:'16px 18px', textAlign:'left', border: sub.isJoker ? '2px solid #a855f7' : 'none', cursor:'pointer' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8 }}>
+                    <div style={{ fontSize:11, color:'#999', fontWeight:700 }}>ANSWER {sub.num}</div>
+                    {sub.isJoker && <div style={{ fontSize:10, background:'#a855f7', color:'#fff', borderRadius:10, padding:'2px 8px', fontWeight:700 }}>✨ CUSTOM</div>}
+                  </div>
                   {sub.cards.map((c,j) => <div key={j} style={{ fontWeight:700, fontSize:17, marginBottom:4 }}>{c}</div>)}
                   <div style={{ marginTop:8, fontSize:13, color:'#666', lineHeight:1.4 }}>
                     {parseBlanks(currentBlackCard.text, sub.cards).map((p,k) =>
@@ -738,6 +768,33 @@ export default function Home() {
                 return <WhiteBtn key={i} text={card} selected={selOrder!==-1} order={selOrder!==-1?selOrder:undefined} onClick={() => toggleCard(i)} />;
               })}
             </div>
+            {pick === 1 && jokersLeft > 0 && !showJokerInput && (
+              <button onClick={() => { setShowJokerInput(true); setSelected([]); }} style={{ marginTop:16, width:'100%', padding:'14px 16px', borderRadius:12, border:'2px dashed #a855f7', background:'transparent', color:'#a855f7', fontWeight:700, fontSize:15, cursor:'pointer', fontFamily:'inherit' }}>
+                ✏️ Write your own &nbsp;·&nbsp; {jokersLeft} left
+              </button>
+            )}
+            {pick === 1 && showJokerInput && (
+              <div style={{ marginTop:16, background:'#1a0a2e', border:'2px solid #a855f7', borderRadius:12, padding:16 }}>
+                <div style={{ fontSize:11, color:'#a855f7', fontWeight:700, letterSpacing:1, marginBottom:10 }}>✨ CUSTOM CARD · {jokersLeft} USE{jokersLeft!==1?'S':''} LEFT</div>
+                <textarea
+                  placeholder="Write your answer…"
+                  value={jokerText}
+                  onChange={e => setJokerText(e.target.value)}
+                  maxLength={120}
+                  rows={3}
+                  style={{ width:'100%', padding:'12px', borderRadius:8, border:'1px solid #a855f7', background:'#0d0d1a', color:'#fff', fontSize:15, fontFamily:'inherit', resize:'none', outline:'none', boxSizing:'border-box' }}
+                />
+                <div style={{ display:'flex', gap:8, marginTop:10 }}>
+                  <button onClick={() => { setShowJokerInput(false); setJokerText(''); }} style={{ flex:1, padding:'11px', borderRadius:10, border:'1px solid #333', background:'transparent', color:'#666', fontWeight:700, fontSize:14, cursor:'pointer', fontFamily:'inherit' }}>Cancel</button>
+                  <button onClick={submitJoker} disabled={!jokerText.trim()||loading} style={{ flex:2, padding:'11px', borderRadius:10, border:'none', background:jokerText.trim()?'#a855f7':'#2a1a3a', color:jokerText.trim()?'#fff':'#555', fontWeight:700, fontSize:14, cursor:jokerText.trim()?'pointer':'not-allowed', fontFamily:'inherit' }}>
+                    {loading ? '…' : 'Play custom card →'}
+                  </button>
+                </div>
+              </div>
+            )}
+            {pick === 1 && jokersLeft === 0 && (
+              <div style={{ marginTop:16, textAlign:'center', fontSize:12, color:'#444' }}>No custom cards left</div>
+            )}
           </div>
         </div>
       );
