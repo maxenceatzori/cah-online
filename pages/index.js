@@ -521,10 +521,26 @@ function Inp({ placeholder, value, onChange, style: s, ...rest }) {
 const page = { minHeight:'100vh', background:'#0a0a0a', color:'#fff', display:'flex', flexDirection:'column', alignItems:'center', padding:'24px 16px', maxWidth:480, margin:'0 auto' };
 
 export default function Home() {
-  const [myId] = useState(genId);
-  const [screen, setScreen] = useState('home');
-  const [myName, setMyName] = useState('');
-  const [roomCode, setRoomCode] = useState('');
+  const [myId] = useState(() => {
+    if (typeof window === 'undefined') return genId();
+    const saved = localStorage.getItem('cah_myId');
+    if (saved) return saved;
+    const id = genId();
+    localStorage.setItem('cah_myId', id);
+    return id;
+  });
+  const [screen, setScreen] = useState(() => {
+    if (typeof window === 'undefined') return 'home';
+    return localStorage.getItem('cah_screen') || 'home';
+  });
+  const [myName, setMyName] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return localStorage.getItem('cah_myName') || '';
+  });
+  const [roomCode, setRoomCode] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    return localStorage.getItem('cah_roomCode') || '';
+  });
   const [joinCode, setJoinCode] = useState('');
   const [gs, setGs] = useState(null);
   const [selected, setSelected] = useState([]);
@@ -534,6 +550,16 @@ export default function Home() {
   const [jokerText, setJokerText] = useState('');
   const [showJokerInput, setShowJokerInput] = useState(false);
   const pollRef = useRef(null);
+
+  // Persist session to localStorage whenever key state changes
+  useEffect(() => { localStorage.setItem('cah_screen', screen); }, [screen]);
+  useEffect(() => { localStorage.setItem('cah_myName', myName); }, [myName]);
+  useEffect(() => { localStorage.setItem('cah_roomCode', roomCode); }, [roomCode]);
+
+  const clearSession = () => {
+    localStorage.removeItem('cah_screen');
+    localStorage.removeItem('cah_roomCode');
+  };
 
   useEffect(() => {
     if ((screen === 'lobby' || screen === 'game') && roomCode) {
@@ -697,6 +723,8 @@ export default function Home() {
     await saveRoom(roomCode, newState); setGs(newState); setScreen('lobby');
   };
 
+  const goHome = () => { clearSession(); setScreen('home'); setRoomCode(''); setGs(null); };
+
   const copyCode = () => {
     navigator.clipboard?.writeText(roomCode).catch(() => {});
     setCopied(true); setTimeout(() => setCopied(false), 2000);
@@ -774,6 +802,7 @@ export default function Home() {
             ? <Btn onClick={startGame} disabled={loading}>{loading ? 'Starting…' : `Start game → (${gs?.players?.length} player${gs?.players?.length!==1?'s':''})`}</Btn>
             : <div className="pulse" style={{ textAlign:'center', color:'#333', fontSize:14 }}>Waiting for the host to start the game…</div>
           }
+          <button onClick={goHome} style={{ marginTop:16, width:'100%', background:'transparent', border:'none', color:'#333', fontSize:13, cursor:'pointer', padding:'8px' }}>← Leave game</button>
         </div>
       </div>
     );
