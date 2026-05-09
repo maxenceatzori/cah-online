@@ -1,8 +1,8 @@
 import { Redis } from '@upstash/redis';
 
 export default async function handler(req, res) {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = process.env.redis2_KV_REST_API_URL;
+  const token = process.env.redis2_KV_REST_API_TOKEN;
 
   if (!url || !token) {
     return res.status(200).json({
