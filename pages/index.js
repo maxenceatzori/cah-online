@@ -476,7 +476,7 @@ function Scoreboard({ players, czarId, myId }) {
           <div className="sb-left">
             <div className="sb-avatar">{p.name[0].toUpperCase()}</div>
             <span className="sb-name" style={{ color: p.id === myId ? '#fff' : '#888', fontWeight: p.id === myId ? 700 : 500 }}>
-              {p.name}{p.id === myId ? ' · you' : ''}{p.id === czarId ? ' 👑' : ''}
+              {p.name}{p.id === myId ? ' · you' : ''}{p.id === czarId ? ' 🌮' : ''}
             </span>
           </div>
           <div className="sb-score bebas">{p.score}</div>
@@ -819,7 +819,7 @@ export default function Home() {
           <div style={{ marginTop:20 }}>
             {isCzar
               ? <Btn onClick={nextRound} disabled={loading}>{loading ? 'Loading…' : 'Next round →'}</Btn>
-              : <div className="pulse" style={{ textAlign:'center', color:'#333', fontSize:14 }}>Waiting for {czar?.name} to start the next round…</div>
+              : <div className="pulse" style={{ textAlign:'center', color:'#333', fontSize:14 }}>Waiting for El Presidente {czar?.name} to start the next round…</div>
             }
           </div>
         </div>
@@ -830,7 +830,7 @@ export default function Home() {
       if (!isCzar) return (
         <div style={{ ...page, justifyContent:'center' }}>
           <div style={{ fontSize:52, marginBottom:12 }}>⚖️</div>
-          <div className="bebas" style={{ fontSize:34, textAlign:'center' }}>{czar?.name} is judging…</div>
+          <div className="bebas" style={{ fontSize:34, textAlign:'center' }}>{czar?.name} is El Presidente — judging in progress…</div>
           <div style={{ color:'#444', marginTop:8 }}>Sit tight!</div>
         </div>
       );
@@ -839,7 +839,7 @@ export default function Home() {
         <div style={page}>
           <div style={{ width:'100%' }}>
             <div style={{ background:'#f59e0b', color:'#000', borderRadius:10, padding:'8px 16px', textAlign:'center', fontWeight:700, fontSize:13, marginBottom:16 }}>
-              👑 You are the Card Czar — pick your favorite!
+              🌮 You are El Presidente — pick your favorite!
             </div>
             <BlackCard text={currentBlackCard.text} pick={pick} />
             <div style={{ marginTop:18, display:'flex', flexDirection:'column', gap:12, paddingBottom:24 }}>
@@ -871,7 +871,7 @@ export default function Home() {
         <div style={page}>
           <div style={{ width:'100%' }}>
             <div style={{ background:'#f59e0b', color:'#000', borderRadius:10, padding:'8px 16px', textAlign:'center', fontWeight:700, fontSize:13, marginBottom:16 }}>
-              👑 You are the Card Czar — wait for answers
+              🌮 You are El Presidente — wait for answers
             </div>
             <BlackCard text={currentBlackCard.text} pick={pick} />
             <div style={{ background:'#111', border:'1px solid #1e1e1e', borderRadius:14, padding:20, textAlign:'center', marginTop:18 }}>
