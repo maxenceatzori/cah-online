@@ -402,7 +402,8 @@ const genCode = () => {
 
 const loadRoom = async code => {
   const res = await fetch(`/api/room/${code}`);
-  if (!res.ok) return null;
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error('server');
   return res.json();
 };
 
@@ -572,7 +573,9 @@ export default function Home() {
     if (!joinCode.trim()) return setError('Enter a room code!');
     setLoading(true); setError('');
     const code = joinCode.trim().toUpperCase();
-    const state = await loadRoom(code);
+    let state;
+    try { state = await loadRoom(code); }
+    catch { setLoading(false); return setError('Server error — check back in a moment'); }
     if (!state) { setLoading(false); return setError('Room not found'); }
     if (state.phase !== 'lobby') { setLoading(false); return setError('Game already started'); }
     if (state.players.find(p => p.name.toLowerCase() === myName.trim().toLowerCase())) {
